@@ -16,6 +16,9 @@ export default function ProductDetailView({ product, locale, contentSource }: Pr
       : product.meta.ctaUrl
         ? [{ label: product.meta.ctaLabel || defaultCtaLabel, url: product.meta.ctaUrl }]
         : [{ label: defaultCtaLabel, url: `/${locale}/contact` }];
+  const primaryAction = actionLinks[0];
+  const secondaryAction =
+    actionLinks[1] || { label: locale === 'en' ? 'Contact us' : 'Neem contact op', url: `/${locale}/contact` };
 
   const isExternalUrl = (url: string) => /^https?:\/\//i.test(url);
   const normalizeInternalUrl = (url: string) => {
@@ -24,6 +27,18 @@ export default function ProductDetailView({ product, locale, contentSource }: Pr
     }
     return url.startsWith(`/${locale}/`) ? url : `/${locale}${url}`;
   };
+  const resolveHref = (url: string) => (isExternalUrl(url) ? url : normalizeInternalUrl(url));
+  const isStoreAction = (label: string) => {
+    const normalized = label.toLowerCase();
+    return (
+      normalized.includes('app store') ||
+      normalized.includes('google play') ||
+      normalized.includes('ios') ||
+      normalized.includes('android')
+    );
+  };
+  const primaryActionHref = resolveHref(primaryAction.url);
+  const secondaryActionHref = resolveHref(secondaryAction.url);
 
   return (
     <div className="bg-white/80 dark:bg-slate-950">
@@ -91,26 +106,83 @@ export default function ProductDetailView({ product, locale, contentSource }: Pr
             <div className="mt-6">
               <div className="space-y-3">
                 {actionLinks.map((action, index) => {
-                  const href = isExternalUrl(action.url) ? action.url : normalizeInternalUrl(action.url);
+                  const href = resolveHref(action.url);
+                  const external = isExternalUrl(action.url);
+                  const storeStyle = isStoreAction(action.label);
                   return (
-                  <Link
-                    key={`${action.label}-${action.url}-${index}`}
-                    href={href}
-                    target={isExternalUrl(action.url) ? '_blank' : undefined}
-                    rel={isExternalUrl(action.url) ? 'noopener noreferrer' : undefined}
-                    className={
-                      index === 0
-                        ? 'btn-gradient inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white'
-                        : 'btn-gradient-outline inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold'
-                    }
-                  >
-                    {action.label}
-                  </Link>
+                    <Link
+                      key={`${action.label}-${action.url}-${index}`}
+                      href={href}
+                      target={external ? '_blank' : undefined}
+                      rel={external ? 'noopener noreferrer' : undefined}
+                      className={
+                        storeStyle
+                          ? 'inline-flex w-full items-center gap-3 rounded-xl bg-slate-950 px-4 py-3 text-white shadow-lg shadow-slate-900/25 transition hover:-translate-y-0.5 hover:bg-black dark:bg-white dark:text-slate-900 dark:shadow-black/30 dark:hover:bg-slate-100'
+                          : index === 0
+                            ? 'btn-gradient inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white'
+                            : 'btn-gradient-outline inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold'
+                      }
+                    >
+                      {storeStyle ? (
+                        <>
+                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-[10px] font-bold uppercase tracking-wide dark:bg-slate-900/10">
+                            iOS
+                          </span>
+                          <span className="flex flex-col text-left leading-tight">
+                            <span className="text-[10px] font-medium uppercase tracking-wide opacity-80">
+                              {locale === 'en' ? 'Download on the' : 'Download op de'}
+                            </span>
+                            <span className="text-base font-semibold">{action.label}</span>
+                          </span>
+                        </>
+                      ) : (
+                        action.label
+                      )}
+                    </Link>
                   );
                 })}
               </div>
             </div>
           </aside>
+        </div>
+      </section>
+
+      <section className="pb-16">
+        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-cyan-600 p-8 text-white shadow-2xl shadow-indigo-900/20 sm:p-10">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/15 blur-3xl" />
+              <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-cyan-200/20 blur-3xl" />
+            </div>
+            <div className="relative flex flex-col gap-5 sm:gap-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-100">
+                {locale === 'en' ? 'Ready to Play?' : 'Klaar om te spelen?'}
+              </p>
+              <h2 className="max-w-3xl text-3xl font-bold leading-tight sm:text-4xl">
+                {locale === 'en'
+                  ? 'Start your Block Nova run and push your score to the top.'
+                  : 'Start je Block Nova run en duw je score naar de top.'}
+              </h2>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href={primaryActionHref}
+                  target={isExternalUrl(primaryAction.url) ? '_blank' : undefined}
+                  rel={isExternalUrl(primaryAction.url) ? 'noopener noreferrer' : undefined}
+                  className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-bold text-indigo-700 transition hover:-translate-y-0.5 hover:bg-indigo-50"
+                >
+                  {primaryAction.label}
+                </Link>
+                <Link
+                  href={secondaryActionHref}
+                  target={isExternalUrl(secondaryAction.url) ? '_blank' : undefined}
+                  rel={isExternalUrl(secondaryAction.url) ? 'noopener noreferrer' : undefined}
+                  className="inline-flex items-center justify-center rounded-xl border border-white/55 bg-white/10 px-6 py-4 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/20"
+                >
+                  {secondaryAction.label}
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

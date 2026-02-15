@@ -33,16 +33,16 @@ test.describe('Core UX and SEO', () => {
   });
 
   test('product detail page renders markdown/MDX content and metadata', async ({ page }) => {
-    await page.goto('/en/products/cloudsync-pro');
+    await page.goto('/en/products/block-nova');
 
-    await expect(page.locator('section h1').first()).toContainText('CloudSync Pro');
-    await expect(page.getByRole('heading', { level: 2, name: 'Key Features' })).toBeVisible();
-    await expect(page.getByText('Real-time synchronization', { exact: true }).first()).toBeVisible();
+    await expect(page.locator('section h1').first()).toContainText('Block Nova');
+    await expect(page.getByRole('heading', { level: 2, name: 'Core Gameplay' })).toBeVisible();
+    await expect(page.getByText('Drag the active block to match targets.', { exact: true }).first()).toBeVisible();
 
-    await expect(page).toHaveTitle(/CloudSync Pro \| Enterprise Cloud Sync/);
+    await expect(page).toHaveTitle(/Block Nova \| Fast Arcade Puzzle for iOS/);
 
     const description = await page.locator('meta[name="description"]').getAttribute('content');
-    expect(description).toContain('Enterprise cloud synchronization');
+    expect(description).toContain('high-energy iOS puzzle game');
   });
 
   test('home page SEO title is loaded from markdown seo content', async ({ page }) => {
@@ -50,19 +50,12 @@ test.describe('Core UX and SEO', () => {
     await expect(page).toHaveTitle(/Norixis \| Innovative Software and Apps/);
   });
 
-  test('products category filter updates URL query and filters cards', async ({ page }) => {
+  test('products page shows Block Nova as the only current product', async ({ page }) => {
     await page.goto('/en/products');
 
     const cardTitles = page.locator('.card-hover h3');
     const initialCount = await cardTitles.count();
-    expect(initialCount).toBeGreaterThan(2);
-
-    await page.getByTestId('products-category-chip-productivity').click();
-    await expect(page).toHaveURL(/\/en\/products\?category=Productivity/);
-
-    await expect(page.getByRole('heading', { level: 3, name: 'TaskFlow' })).toBeVisible();
-
-    const filteredCount = await cardTitles.count();
-    expect(filteredCount).toBe(1);
+    expect(initialCount).toBe(1);
+    await expect(page.getByRole('heading', { level: 3, name: 'Block Nova' })).toBeVisible();
   });
 });
